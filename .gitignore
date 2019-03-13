@@ -1,0 +1,5 @@
+hello
+out/server
+config/config-input.yaml
+config/creds-input.yaml
+keys/*

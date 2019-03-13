@@ -1,0 +1,20 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Configuration
+metadata:
+  name: goapp
+  namespace: default
+spec:
+  revisionTemplate:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+        autoscaling.knative.dev/minScale: "2"
+    spec:
+      container:
+        image: nimak/knative-sample-app:v2
+        imagePullPolicy: Always
+        env:
+          - name: NAME
+            value: "Nima"
+

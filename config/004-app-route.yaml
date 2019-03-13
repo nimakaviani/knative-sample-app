@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:assert", "assert")
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Route
+metadata:
+  name: goapp
+  namespace: default
+spec:
+  traffic:
+    #@ for/end revision in data.values.revisions:
+    - revisionName: #@ revision.name if revision.name != "" and revision.name != None else assert.fail("needs revision info")
+      percent: #@ revision.percent if revision.percent != None else assert.fail("needs revision info")
