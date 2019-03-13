@@ -75,7 +75,7 @@ revisions:
 template and update the route to make the app available on the web:
 
 ```
-$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -y  -f -
+$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -f -
 ```
 
 curl the app endpoint:
@@ -97,7 +97,7 @@ $ kapp deploy -a goapp -p -f https://raw.githubusercontent.com/knative/build-tem
 update `005-creds-input.yaml` and supply the secrets for dockerhub and github to your Knative app:
 
 ```
-$ ytt tpl -f config/005-creds-input.yaml -f config/005-kaniko-build-account.yaml | kapp deploy -a goapp -y -p -f - 
+$ ytt tpl -f config/005-creds-input.yaml -f config/005-kaniko-build-account.yaml | kapp deploy -a goapp -p -f - 
 ```
 
 ## 6. Deploy new version from source and update routes
@@ -132,7 +132,7 @@ revisions:
 and we proceed to update the route:
 
 ```
-$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -y  -f -
+$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -f -
 ```
 
 curl the app endpoint and notice that with a ~20% ratio we hit the new endpoint:
@@ -187,7 +187,7 @@ revisions:
 and proceed to update the route:
 
 ```
-$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -y  -f -
+$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -f -
 ```
 
 curl the app endpoint and notice that our requests get load balanced across the two pods:
