@@ -13,6 +13,7 @@ spec:
             autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
             autoscaling.knative.dev/metric: concurrency
             autoscaling.knative.dev/target: "5"
+            autoscaling.knative.dev/minScale: "1"
         spec:
           allowAsync: true
           container:

@@ -29,6 +29,17 @@ if done right, the app should indicate whether the number is prime or not. Not `
 Hi there Nima!! -  - true
 ```
 
+## Monitor queueing stats reports
+
+get on the user container and run the following command:
+
+```
+apt-get update && apt-get install -y curl
+watch -n0.1 "curl -s localhost:9090/metrics | grep -v '#'"
+```
+
+the output would show stats results reported by the queue.
+
 ## Load test the Application
 
 run a `for` loop like the following and notice that the auto-scaler bumps the number of app instances
