@@ -20,13 +20,15 @@ kapp delete -a async-app -y && kapp deploy -f config/010-app-from-image.yaml -a 
 curl the app with a given prime number to make sure it runs:
 
 ```
-curl goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337
+curl "goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337&check=done"
 ```
 
 if done right, the app should indicate whether the number is prime or not. Not `true` at the end of the line:
 
 ```
-Hi there Nima!! -  - true
+Hi there Nima!!
+Check: done
+IsPrime: true
 ```
 
 ## Monitor queueing stats reports
@@ -45,7 +47,7 @@ the output would show stats results reported by the queue.
 run a `for` loop like the following and notice that the auto-scaler bumps the number of app instances
 
 ```
-for i in $(seq 20); do sleep 1; curl   goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337& done
+for i in $(seq 20); do sleep 1; curl "goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337&check=$i"& done
 ```
 
 this should trigger the autoscaler to launch one or more new container after a few requests.
@@ -55,7 +57,7 @@ this should trigger the autoscaler to launch one or more new container after a f
 run the command above with `Async` enabled
 
 ```
-for i in $(seq 20); do sleep 1; curl -H "Async: true" goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337 >> guid.txt; echo >> guid.txt& done
+for i in $(seq 20); do sleep 1; curl -H "Async: true" "goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337&check=$i" >> guid.txt; echo >> guid.txt& done
 ```
 
 curl the endpoint with guids:
