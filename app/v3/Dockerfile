@@ -5,4 +5,5 @@ run go build -o out/server github.com/nimakaviani/knative-sample-app/app/v3/
 
 from ubuntu:bionic
 copy --from=builder /go/src/github.com/nimakaviani/knative-sample-app/out/server /server
+run apt-get update && apt-get install -y curl
 cmd ["/server"]

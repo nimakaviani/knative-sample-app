@@ -1,10 +1,10 @@
 # Performance Testing Async Knative Calls
 
-This document describes how to enable Async calls for Knative based on the PoC implementation [github.com/nimakaviani/serving](https://github.com/nimakaviani/serving). 
+This document describes how to test autoscaling for Async calls in Knative based on the PoC implementation at [github.com/nimakaviani/serving](https://github.com/nimakaviani/serving).
 
 ## Deploy Application
 
-build docker image an push `v3` to your repo like below:
+build docker image and push `v3` to your repo like below:
 
 ```
 ./hack/dockerize.sh nimak/knative-sample-app v3
@@ -33,10 +33,15 @@ IsPrime: true
 
 ## Monitor queueing stats reports
 
-get on the user container and run the following command:
+get on the user container:
 
 ```
-apt-get update && apt-get install -y curl
+kubectl exec -it -c user-container [pod-name] bash
+```
+
+run the following command:
+
+```
 watch -n0.1 "curl -s localhost:9090/metrics | grep -v '#'"
 ```
 
@@ -44,13 +49,13 @@ the output would show stats results reported by the queue.
 
 ## Load test the Application
 
-run a `for` loop like the following and notice that the auto-scaler bumps the number of app instances
+run a `for` loop like the following and notice that the auto-scaler bump the number of app instances
 
 ```
 for i in $(seq 20); do sleep 1; curl "goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud?num=1000012337&check=$i"& done
 ```
 
-this should trigger the autoscaler to launch one or more new container after a few requests.
+this should trigger the autoscaler to launch one or more new containers after a few requests.
 
 ## Try the Application in Async mode
 
