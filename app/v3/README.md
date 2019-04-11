@@ -11,10 +11,10 @@ build docker image an push `v3` to your repo like below:
 docker push nimak/knative-sample-app:v3
 ```
 
-deploy the application:
+deploy the application (delete previous version if it exists):
 
 ```
-kapp deploy -y -a async-app -p -f config/010-app-from-image.yaml
+kapp delete -a async-app -y && kapp deploy -f config/010-app-from-image.yaml -a async-app -p -y
 ```
 
 curl the app with a given prime number to make sure it runs:
@@ -39,7 +39,7 @@ for i in $(seq 20); do sleep 1; curl   goapp.default.nk3-eirini-cluster.us-south
 
 this should trigger the autoscaler to launch one or more new container after a few requests.
 
-## Load test the Application in Async mode
+## Try the Application in Async mode
 
 run the command above with `Async` enabled
 
@@ -50,5 +50,5 @@ for i in $(seq 20); do sleep 1; curl -H "Async: true" goapp.default.nk3-eirini-c
 curl the endpoint with guids:
 
 ```
-cat guid.txt | xargs -n1 -I {} curl -H "Async: true" -H "Async-UUID: {}"  goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud
+cat guid.txt | xargs -n1 -I {} sh -c 'echo {}; curl -H "Async: true" -H "Async-UUID: {}"  goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud; echo'
 ```

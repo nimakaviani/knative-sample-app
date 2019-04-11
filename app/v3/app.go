@@ -43,7 +43,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(
 		w,
-		"Hi there %s!! - %s - %t\n",
+		`Hi there %s!!
+Check: %s
+IsPrime: %t`,
 		os.Getenv("NAME"), extra, prime,
 	)
 }

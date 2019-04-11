@@ -14,7 +14,7 @@ spec:
             autoscaling.knative.dev/metric: concurrency
             autoscaling.knative.dev/target: "5"
         spec:
-          allowAsync: "true"
+          allowAsync: true
           container:
             image: nimak/knative-sample-app:v3
             imagePullPolicy: Always
