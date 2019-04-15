@@ -28,16 +28,19 @@ spec:
                 value: "John"
 EOF
 
-sleep 5
+sleep 15
+
+# may need to be updated depending on how many loadBalancers are configured
+export INGRESSIP=$(kubectl get svc istio-ingressgateway -n istio-system -ocustom-columns=D:.status.loadBalancer.ingress[0].ip --no-headers)
 
 export APP=$(kubectl get ksvc/goapp -ocustom-columns=D:.status.domain --no-headers)
 
 echo "Wait for it to be ready"
-while ! curl -sf $APP ; do sleep 1 ; done
+while ! curl -sf -H "Host: $APP" "http://$INGRESSIP" ; do sleep 1 ; done
 
 echo "hit the autoscaler with burst of requests"
 for i in `seq 7`; do
-    curl -s "$APP?wait=10s" 1>/dev/null &
+    curl -s -H "Host: $APP" "http://$INGRESSIP?wait=10s" 1>/dev/null 2>/dev/null &
 done
 
 echo "wait for the autoscaler to kick in and the bursty requests to finish"
@@ -45,7 +48,7 @@ sleep 30
 
 echo "send longer requets"
 for i in `seq 5`; do
-    curl "$APP?wait=1m"&
+    curl -v -H "Host: $APP" "http://$INGRESSIP?wait=1m"&
     sleep 1;
 done
 
