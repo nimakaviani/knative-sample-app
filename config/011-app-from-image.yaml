@@ -1,0 +1,26 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: goapp
+  namespace: default
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+            autoscaling.knative.dev/metric: concurrency
+            autoscaling.knative.dev/target: "2"
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          sinkURL: "http://foo-channel-8t2gm.default.svc.cluster.local"
+          # sinkURL: "http://sink.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud"
+          allowAsync: true
+          container:
+            image: nimak/knative-sample-app:v3
+            imagePullPolicy: Always
+            env:
+              - name: NAME
+                value: "Nima"
