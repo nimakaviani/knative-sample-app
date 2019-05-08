@@ -2,5 +2,6 @@ hello
 out/server
 config/config-input.yaml
 config/creds-input.yaml
+config/db-input-priv.yaml
 keys/*
 guid.txt
