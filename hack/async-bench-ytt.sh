@@ -1,5 +1,7 @@
 #! /bin/bash
 
+WAIT_TIME="${2:-4m}"
+
 set -ex
 
 echo "> create the app"
@@ -34,10 +36,10 @@ if ! [ -z $1 ] && [ $1 == "launch" ]; then
     echo "> launch async requests"
     for i in $(seq 5); do
         sleep 1
-        curl -s -H "Async: true" -H "Host: $APP" "http://$INGRESSIP?wait=4m&check=$i" >> guid.txt
+        curl -s -H "Async: true" -H "Host: $APP" "http://$INGRESSIP?wait=$WAIT_TIME&check=$i" >> guid.txt
         echo >> guid.txt
     done
 else
     echo "> query: "
-    cat guid.txt | awk '{print $1}' | xargs -n1 -I {} sh -c 'echo {}; curl -H "Async: true" -H "Async-UUID: {}" -H "Host: $APP" "http://$INGRESSIP"; echo'
+    cat guid.txt | awk '{print $1}' | xargs -n1 -I {} sh -c 'echo "> {}"; curl -H "Async: true" -H "Async-UUID: {}" -H "Host: $APP" "http://$INGRESSIP"; echo'
 fi
