@@ -48,7 +48,7 @@ sleep 30
 
 echo "send longer requets"
 for i in `seq 5`; do
-    curl -v -H "Host: $APP" "http://$INGRESSIP?wait=1m"&
+    curl -v -H "Host: $APP" "http://$INGRESSIP?wait=4m"&
     sleep 1;
 done
 

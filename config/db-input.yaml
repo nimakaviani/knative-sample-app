@@ -1,0 +1,10 @@
+#@data/values
+---
+timeout: 400
+scaling:
+  target: 2
+  minScale: 1
+database:
+  driver: postgres
+  connection_string: #! fill in db connection string
+

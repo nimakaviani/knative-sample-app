@@ -1,3 +1,4 @@
+#@ load("@ytt:data", "data")
 ---
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
@@ -12,10 +13,13 @@ spec:
           annotations:
             autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
             autoscaling.knative.dev/metric: concurrency
-            autoscaling.knative.dev/target: "2"
-            autoscaling.knative.dev/minScale: "1"
+            autoscaling.knative.dev/target: #@ str(data.values.scaling.target)
+            autoscaling.knative.dev/minScale: #@ str(data.values.scaling.minScale)
         spec:
-          allowAsync: true
+          database:
+            driver: #@ data.values.database.driver
+            connectionString: #@ data.values.database.connection_string
+          timeoutSeconds: #@ data.values.timeout
           container:
             image: nimak/knative-sample-app:v3
             imagePullPolicy: Always

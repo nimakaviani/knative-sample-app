@@ -3,31 +3,7 @@
 set -ex
 
 echo "> create the app"
-kubectl apply -f - <<EOF
-apiVersion: serving.knative.dev/v1alpha1
-kind: Service
-metadata:
-  name: goapp
-  namespace: default
-spec:
-  runLatest:
-    configuration:
-      revisionTemplate:
-        metadata:
-          annotations:
-            autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
-            autoscaling.knative.dev/metric: concurrency
-            autoscaling.knative.dev/target: "2"
-            autoscaling.knative.dev/minScale: "1"
-        spec:
-          timeoutSeconds: 400
-          container:
-            image: nimak/knative-sample-app:v3
-            imagePullPolicy: Always
-            env:
-              - name: NAME
-                value: "John"
-EOF
+ytt tpl -f config/db-input.yaml -f config/010-app-from-image.yaml | kubectl apply -f -
 
 if ! [ -z $1 ] && [ $1 == "launch" ]; then
     sleep 15
@@ -63,5 +39,5 @@ if ! [ -z $1 ] && [ $1 == "launch" ]; then
     done
 else
     echo "> query: "
-    cat guid.txt | awk '{print $1}' | xargs -n1 -I {} sh -c 'echo {}; curl -v -H "Async: true" -H "Async-UUID: {}" -H "Host: $APP" "http://$INGRESSIP"; echo'
+    cat guid.txt | awk '{print $1}' | xargs -n1 -I {} sh -c 'echo {}; curl -H "Async: true" -H "Async-UUID: {}" -H "Host: $APP" "http://$INGRESSIP"; echo'
 fi
