@@ -73,7 +73,7 @@ cat guid.txt | xargs -n1 -I {} sh -c 'echo {}; curl -H "Async: true" -H "Async-U
 
 ## End-to-End with a Single Script:
 
-Provide connection string for a postgres database in [hack/async-bench-all.sh](hack/async-bench-all.sh#L27)
+Provide connection string for a postgres database in [hack/async-bench-all.sh](../../hack/async-bench-all.sh#L27)
 
 Then run the following:
 
