@@ -70,3 +70,22 @@ curl the endpoint with guids:
 ```
 cat guid.txt | xargs -n1 -I {} sh -c 'echo {}; curl -H "Async: true" -H "Async-UUID: {}"  goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud; echo'
 ```
+
+## End-to-End with a Single Script:
+
+Provide connection string for a postgres database in [hack/async-bench-all.sh](hack/async-bench-all.sh#L27)
+
+Then run the following:
+
+```bash
+# launch the requests with a 3m delay for async
+./hack/async-bench-all.sh launch 3m
+
+# inspect the async request guids and pods they are running on:
+# first column is the request guid and second column is the pod id
+cat guid.txt
+
+# wait for the requests to finish and then query for results 
+./hack/async-bench-all.sh
+
+```

@@ -5,7 +5,34 @@ set -ex
 WAIT_TIME="${2:-4m}"
 
 echo "> create the app"
-ytt tpl -f config/db-input.yaml -f config/010-app-from-image.yaml | kubectl apply -f -
+kubectl apply -f - <<EOF
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: goapp
+  namespace: default
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+            autoscaling.knative.dev/metric: concurrency
+            autoscaling.knative.dev/target: "2"
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          database:
+            driver: postgres
+            connectionString: # <= set the connection string
+          timeoutSeconds: 400
+          container:
+            image: nimak/knative-sample-app:v3
+            imagePullPolicy: Always
+            env:
+              - name: NAME
+                value: "John"
+EOF
 
 if ! [ -z $1 ] && [ $1 == "launch" ]; then
     sleep 15
