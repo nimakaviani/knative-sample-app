@@ -50,8 +50,8 @@ get the corresponding service:
 
 ```
 $ kubectl get ksvc
-NAME          SERVICE NAME          AGE   READY   REASON 
-goapp-wtkkg   goapp-wtkkg-service   17m   True
+NAME    URL                                                                       LATESTCREATED   LATESTREADY    READY   REASON
+goapp   http://goapp.default.nk-eirini-new2.us-south.containers.appdomain.cloud   goapp-second    goapp-second   True
 ```
 
 ## 3. Get App Info and curl the app
@@ -59,7 +59,7 @@ goapp-wtkkg   goapp-wtkkg-service   17m   True
 ```bash
 export APP=$(kubectl get ksvc/goapp -ocustom-columns=D:.status.domain --no-headers)
 echo $APP # corresponds to the app url
-,,,
+```
 
 Hit the App endpoint:
 
@@ -90,7 +90,7 @@ curl the endpoint to see the scaling impacts:
 ./hack/quick-bench.sh long
 ```
 
-notice how the autoscaler kicks in and bumps up the number of app instance
+Notice how the autoscaler kicks in and bumps up the number of app instance
 
 ## 5. Deploy canaries
 
