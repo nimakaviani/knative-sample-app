@@ -1,0 +1,33 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Configuration
+metadata:
+  name: goapp
+  namespace: default
+  labels:
+    test: test
+spec:
+  build:
+    apiVersion: build.knative.dev/v1alpha1
+    kind: Build
+    spec:
+      serviceAccountName: build-bot
+      source:
+        git:
+          url: git@github.com:nimakaviani/knative-sample-app.git
+          revision: master
+      template:
+        name: buildpacks-cloudfoundry
+        arguments:
+          - name: IMAGE
+            value: docker.io/nimak/knative-sample-app:v2
+          - name: DIRECTORY
+            value: ./app/v2/
+  revisionTemplate:
+    spec:
+      container:
+        image: docker.io/nimak/knative-sample-app:v2
+        imagePullPolicy: Always
+        env:
+          - name: NAME
+            value: "Mike"

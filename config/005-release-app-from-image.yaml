@@ -1,0 +1,31 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: goapp
+  namespace: default
+spec:
+  template:
+    metadata:
+      name: goapp-second
+      annotations:
+        autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+        autoscaling.knative.dev/metric: concurrency
+        autoscaling.knative.dev/target: "1"
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      containers:
+      - image: nimak/knative-sample-app:v1
+        env:
+        - name: NAME
+          value: "Tom"
+  traffic:
+  - tag: current
+    revisionName: goapp-first
+    percent: 50
+  - tag: candidate
+    revisionName: goapp-second
+    percent: 50
+  - tag: latest
+    latestRevision: true
+    percent: 0

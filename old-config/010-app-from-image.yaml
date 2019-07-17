@@ -11,18 +11,14 @@ spec:
       revisionTemplate:
         metadata:
           annotations:
-            autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
-            autoscaling.knative.dev/metric: concurrency
-            autoscaling.knative.dev/target: #@ str(data.values.scaling.target)
-            autoscaling.knative.dev/minScale: #@ str(data.values.scaling.minScale)
+            autoscaling.knative.dev/minScale: "1"
         spec:
           database:
             driver: #@ data.values.database.driver
             connectionString: #@ data.values.database.connection_string
-          timeoutSeconds: #@ data.values.timeout
           container:
             image: nimak/knative-sample-app:v3
             imagePullPolicy: Always
             env:
               - name: NAME
-                value: "Nima"
+                value: "JOHN"

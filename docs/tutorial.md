@@ -4,28 +4,20 @@ Steps below describe deployment of [knative-sample-app](https://github.com/nimak
 
 ## 0. Install Knative
 
-for Knative v0.3.0
+for Knative v0.6.0
 ```
-$ kubectl apply --filename https://github.com/knative/serving/releases/download/v0.3.0/serving.yaml \
---filename https://github.com/knative/build/releases/download/v0.3.0/release.yaml \
---filename https://github.com/knative/eventing/releases/download/v0.3.0/release.yaml \
---filename https://github.com/knative/eventing-sources/releases/download/v0.3.0/release.yaml 
-```
-
-for Knative v0.4.0
-```
-$ kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/serving.yaml \
---filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml \
---filename https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml \
---filename https://github.com/knative/eventing-sources/releases/download/v0.4.0/release.yaml \
---filename https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
+$ kubectl apply --filename https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml \
+--filename https://github.com/knative/build/releases/download/v0.6.0/build.yaml \
+--filename https://github.com/knative/eventing/releases/download/v0.6.0/release.yaml \
+--filename https://github.com/knative/eventing-sources/releases/download/v0.6.0/release.yaml \
+--filename https://raw.githubusercontent.com/knative/serving/v0.6.0/third_party/config/build/clusterrole.yaml
 ```
 
 ## 1. Configure Knative with IKS ingress for Knative services
 
 update the istio ingress for the app domain:
 
-`$ kapp deploy -a goapp -f config/001-knative-ingress.yaml`
+`$ kubectl -f config/001-knative-ingress.yaml`
 
 get the ingress host name:
 
@@ -44,111 +36,41 @@ and change the cluster domain name from `example.com` to the value you copied fr
 
 deploy the app to Kubernetes:
 
-`$ kapp deploy -f config/002-app-from-image.yaml -a goapp -p`
+```bash
+kapp deploy -f config/002-app-from-image.yaml -a goapp -p
+```
 
 inspect the app status:
 
-`$ kapp inspect  -t -a 'label:' --filter-name goapp% --column namespace,name,kind,version,conditions,age | grep -v Event`
+```bash
+kapp inspect  -t -a 'label:' --filter-name goapp% --column namespace,name,kind,version,conditions,age | grep -v Event
+```
 
-get the corresponding revision for the deployed configuration:
+get the corresponding service:
 
 ```
-$ kubectl get revisions
+$ kubectl get ksvc
 NAME          SERVICE NAME          AGE   READY   REASON 
 goapp-wtkkg   goapp-wtkkg-service   17m   True
 ```
 
-## 3. Update the routes file
+## 3. Get App Info and curl the app
 
-copy the name of the revision and update `004-route-input.yaml`:
+```bash
+export APP=$(kubectl get ksvc/goapp -ocustom-columns=D:.status.domain --no-headers)
+echo $APP # corresponds to the app url
+,,,
 
-```yaml
-#@data/values
----
-revisions:
-  - name: goapp-wtkkg # validation for whatever
-    percent: 100 # some percent
+Hit the App endpoint:
+
+```bash
+curl $APP
 ```
 
-## 4. Apply routes to Knative
+## 4. Tweak Autoscaling for the deployed app
 
-template and update the route to make the app available on the web:
-
-```
-$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -f -
-```
-
-curl the app endpoint:
-
-```
-$ curl goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud
-```
-
-the deployed app version should respond.
-
-## 5. Deploy build templates to build from source
-
-install the kaniko build template:
-
-```
-$ kapp deploy -a goapp -p -f https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml
-```
-
-update `005-creds-input.yaml` and supply the secrets for dockerhub and github to your Knative app:
-
-```
-$ ytt tpl -f config/005-creds-input.yaml -f config/005-kaniko-build-account.yaml | kapp deploy -a goapp -p -f - 
-```
-
-## 6. Deploy new version from source and update routes
-
-deploy the new version of your app and make it get built from source:
-
-```
-$ kapp deploy -p -f config/006-app-from-source.yaml -a goapp
-```
-
-get the revisions and update the route input:
-
-```
-$ kubectl get revisions
-NAME          SERVICE NAME          AGE   READY   REASON
-goapp-2cmgc   goapp-2cmgc-service   8m    True
-goapp-hgmmz   goapp-hgmmz-service   19m   True
-```
-
-with a 80/20 split between the old and the new versions, `004-route-input.yaml` would be like the following:
-
-```yaml
-#@data/values
----
-revisions:
-  - name: goapp-hgmmz 
-    percent: 80 
-  - name: goapp-2cmgc
-    percent: 20
-```
-
-and we proceed to update the route:
-
-```
-$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -f -
-```
-
-curl the app endpoint and notice that with a ~20% ratio we hit the new endpoint:
-
-```
-$ curl goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud
-```
-
-## 7. Deploy to production and tweak auto-scaling
-
-assuming the last build was successful, let's move it to production.
-
-deploy the new version from the latest app image (the one we created in the previous step):
-
-```
-$ kapp deploy -a goapp -p -f config/007-app-from-updated-image.yaml
+```bash
+kapp deploy -f config/003-scaled-app-from-image.yaml -a goapp -p
 ```
 
 notice the annotation below in the new config:
@@ -156,44 +78,85 @@ notice the annotation below in the new config:
 ```yaml
 metadata:
   annotations:
-    autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
-    autoscaling.knative.dev/minScale: "2"
+      autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
+      autoscaling.knative.dev/metric: concurrency
+      autoscaling.knative.dev/target: "1"
+      autoscaling.knative.dev/minScale: "1"
 ```
 
-update revisions for the new route to be created:
+curl the endpoint to see the scaling impacts:
 
-```
-$ kubectl get revisions
-NAME          SERVICE NAME          AGE   READY   REASON
-goapp-2cmgc   goapp-2cmgc-service   8m    True
-goapp-gqsfz   goapp-gqsfz-service   41s   True
-goapp-hgmmz   goapp-hgmmz-service   19m   True
+```bash
+./hack/quick-bench.sh long
 ```
 
-change the way traffic is directed:
+notice how the autoscaler kicks in and bumps up the number of app instance
+
+## 5. Deploy canaries
+
+We deploy an updated version of the app:
+
+```bash
+kapp deploy -f config/004-traffic-split-app-from-image.yaml -a goapp -p
+```
+
+In the new deployment notice the traffic section:
 
 ```yaml
-#@data/values
----
-revisions:
-  - name: goapp-hgmmz 
-    percent: 10 
-  - name: goapp-2cmgc
-    percent: 0
- - name: goapp-gqsf
-    percent: 90
+traffic:
+- tag: current
+  revisionName: goapp-first
+  percent: 100
+- tag: latest
+  revisionName: goapp-second
+  percent: 0
 ```
 
-and proceed to update the route:
+Note that no traffic is redirected to the new version. Lets verify that:
 
-```
-$ ytt tpl -f config/004-route-input.yaml -f config/004-app-route.yaml | kapp deploy -a goapp -p -f -
+```bash
+./hack/quick-bench.sh
 ```
 
-curl the app endpoint and notice that our requests get load balanced across the two pods:
+But the new version can be directly accessed with a dedicated URL:
 
+```bash
+curl goapp-latest.default.nk-eirini-new2.us-south.containers.appdomain.cloud
 ```
-$ curl goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud
+
+In fact, each revision gets its route:
+
+```bash
+kubectl get rt -o yaml
+```
+
+## 6. Traffic Splitting
+
+We update traffic splitting rules and redeploy:
+
+```bash
+kapp deploy -f config/005-release-app-from-image.yaml -a goapp -p
+```
+
+In the new deployment notice the change in the traffic section:
+
+```yaml
+traffic:
+- tag: current
+  revisionName: goapp-first
+  percent: 50
+- tag: candidate
+  revisionName: goapp-second
+  percent: 50
+- tag: latest
+  latestRevision: true
+  percent: 0
+```
+
+Now the traffic is split 50-50. Lets verify that:
+
+```bash
+./hack/quick-bench.sh
 ```
 
 ## What next?
@@ -201,4 +164,3 @@ $ curl goapp.default.nk3-eirini-cluster.us-south.containers.appdomain.cloud
 There is more to Knative.
 
 Particularly with [Knative Eventing](https://github.com/knative/eventing) and the introduction of [Tekton](https://github.com/tektoncd/pipeline), a new CI/CD project as a spin-off of Knative Build. Go ahead and dig deeper. 
-

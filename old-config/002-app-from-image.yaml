@@ -1,0 +1,15 @@
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Configuration
+metadata:
+  name: goapp
+  namespace: default
+spec:
+  revisionTemplate:
+    spec:
+      container:
+        image: nimak/knative-sample-app:v1
+        imagePullPolicy: Always
+        env:
+          - name: NAME
+            value: "Nima"

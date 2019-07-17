@@ -1,0 +1,5 @@
+#@data/values
+---
+revisions:
+- name:  jack #! validation for whatever
+  percent: 100 #! some percent
