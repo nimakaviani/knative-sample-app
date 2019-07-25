@@ -21,7 +21,7 @@ update the istio ingress for the app domain:
 
 get the ingress host name:
 
-`$ ibmcloud ks cluster-get -s --cluster nk3-eirini-cluster --json | jq -r .ingressHostname`
+`$ ibmcloud ks cluster-get -s --cluster [YOUR CLUSTER] --json | jq -r .ingressHostname`
 
 copy the output value of the above command.
 
