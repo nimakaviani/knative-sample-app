@@ -15,7 +15,7 @@ spec:
         autoscaling.knative.dev/minScale: "1"
     spec:
       containers:
-      - image: nimak/knative-sample-app:v1
+      - image: nimak/knative-sample-app:v3
         env:
         - name: NAME
           value: "Tom"

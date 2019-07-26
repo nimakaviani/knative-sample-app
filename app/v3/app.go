@@ -6,7 +6,7 @@ import (
 	"math"
 	"net/http"
 	"os"
-	"strconv"
+	// "strconv"
 	"time"
 )
 
@@ -24,29 +24,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(d)
 	}
 
-	var extra string
-	check, ok := r.URL.Query()["check"]
-	if ok && len(check) > 0 {
-		extra = check[0]
-	}
-
-	var value int
-	num, ok := r.URL.Query()["num"]
-	if ok && len(num) > 0 {
-		value, err = strconv.Atoi(num[0])
-	}
-
-	var prime bool
-	if value > 0 {
-		prime = isPrime(value)
-	}
+	// var extra string
+	// check, ok := r.URL.Query()["check"]
+	// if ok && len(check) > 0 {
+	// 	extra = check[0]
+	// }
+	//
+	// var value int
+	// num, ok := r.URL.Query()["num"]
+	// if ok && len(num) > 0 {
+	// 	value, err = strconv.Atoi(num[0])
+	// }
+	//
+	// var prime bool
+	// if value > 0 {
+	// 	prime = isPrime(value)
+	// }
 
 	fmt.Fprintf(
 		w,
-		`Hi there %s!!
-Check: %s
-IsPrime: %t`,
-		os.Getenv("NAME"), extra, prime,
+		"Hi there %s!! \n",
+		os.Getenv("NAME"),
 	)
 }
 

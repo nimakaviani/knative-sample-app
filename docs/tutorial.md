@@ -2,26 +2,36 @@
 
 Steps below describe deployment of [knative-sample-app](https://github.com/nimakaviani/knative-sample-app) to Knative, deploying from source, blue-green deployment, and achieving HPA for the app. 
 
-## 0. Install Knative
+**NOTE**: This tutorial has instructions on installing Knative v0.7.1 which
+has a hard dependency on K8s 1.14+ due to [#4533](https://github.com/knative/serving/issues/4533).
 
-for Knative v0.6.0
+## 0. Install Istio and Knative
+
+To install Istio on an IBM Kubernetes cluster, run the following command:
+
 ```
-$ kubectl apply --filename https://github.com/knative/serving/releases/download/v0.6.0/serving.yaml \
---filename https://github.com/knative/build/releases/download/v0.6.0/build.yaml \
---filename https://github.com/knative/eventing/releases/download/v0.6.0/release.yaml \
---filename https://github.com/knative/eventing-sources/releases/download/v0.6.0/release.yaml \
---filename https://raw.githubusercontent.com/knative/serving/v0.6.0/third_party/config/build/clusterrole.yaml
+$ ibmcloud ks cluster-addon-enable istio --cluster <cluster_name_or_ID>
+```
+
+For Knative v0.7.1, run `kubectl apply` first with the `--selector` for CRD installation:
+
+```
+$  kubectl apply \
+   --filename https://github.com/knative/serving/releases/download/v0.7.1/serving-beta-crds.yaml \
+   --filename https://github.com/knative/serving/releases/download/v0.7.1/serving-post-1.14.yaml \
+   --filename https://github.com/knative/serving/releases/download/v0.7.1/serving.yaml \
+   --filename https://github.com/knative/build/releases/download/v0.7.0/build.yaml
 ```
 
 ## 1. Configure Knative with IKS ingress for Knative services
 
 update the istio ingress for the app domain:
 
-`$ kubectl -f config/001-knative-ingress.yaml`
+`$ kubectl apply -f config/001-knative-ingress.yaml`
 
 get the ingress host name:
 
-`$ ibmcloud ks cluster-get -s --cluster [YOUR CLUSTER] --json | jq -r .ingressHostname`
+`$ ibmcloud ks cluster-get -s --cluster <cluster_name_or_ID> --json | jq -r .ingressHostname`
 
 copy the output value of the above command.
 
@@ -51,7 +61,7 @@ get the corresponding service:
 ```
 $ kubectl get ksvc
 NAME    URL                                                                       LATESTCREATED   LATESTREADY    READY   REASON
-goapp   http://goapp.default.nk-eirini-new2.us-south.containers.appdomain.cloud   goapp-second    goapp-second   True
+goapp   http://goapp.default.<cluster_name_or_ID>.us-south.containers.appdomain.cloud   goapp-second    goapp-second   True
 ```
 
 ## 3. Get App Info and curl the app
@@ -121,7 +131,7 @@ Note that no traffic is redirected to the new version. Lets verify that:
 But the new version can be directly accessed with a dedicated URL:
 
 ```bash
-curl goapp-latest.default.nk-eirini-new2.us-south.containers.appdomain.cloud
+curl latest-goapp.default.<cluster_name_or_ID>.us-south.containers.appdomain.cloud
 ```
 
 In fact, each revision gets its route:
